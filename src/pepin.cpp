@@ -6,13 +6,14 @@
 #include <time.h>
 #include <cmath>
 #include <vector>
+#include "pepin.h"
 
 #define SCREENW 640
 #define SCREENH 480
 #define WINTITLE "2D Application"
 
 typedef unsigned char u8;
-typedef struct Rectangle {
+/*typedef struct Rectangle {
     int x1, y1, x2, y2; //two points make a rectangle
     unsigned char r, g, b; //will specify rgb vals
 } Rect;
@@ -25,7 +26,7 @@ typedef struct Position {
 typedef struct ActorT {
     Rect sprite;
     Pos pos; //points to bottom left ?
-} Actor;
+} Actor;*/
 
 using namespace std;
 
@@ -35,7 +36,7 @@ void updateTexture();
 
 u8 screenData[SCREENH][SCREENW][3];
 vector<Rect> rects;
-vector<Actor> actors;
+vector<Sprite> actors;
 
 
 static void resize(int width, int height)
@@ -97,18 +98,16 @@ void display(){
         }
     }
     for(int i = 0; i < actors.size(); ++i){
-        int ax1 = actors[i].sprite.x1;
-        int ax2 = actors[i].sprite.x2;
-        int ay1 = actors[i].sprite.y1;
-        int ay2 = actors[i].sprite.y2;
+        int len = actors[i].w;
+        int hgt = actors[i].h;
+        int iy = actors[i].pos.y;
+        int ix = actors[i].pos.x;
 
-        int len = abs(ax2 - ax1);
-        int hgt = abs(ay2 - ay1);
-        for(int y = 0; y < hgt; y++){
-            for(int x = 0; x < len; x++){
-                screenData[y+min(ay1, ay2)][x+min(ax1, ax2)][0] = actors[i].sprite.r;
-                screenData[y+min(ay1, ay2)][x+min(ax1, ax2)][1] = actors[i].sprite.g;
-                screenData[y+min(ay1, ay2)][x+min(ax1, ax2)][2] = actors[i].sprite.b;
+        for(int y = iy - hgt; y < iy; y++){
+            for(int x = ix; x < ix + len; x++){
+                screenData[y][x][0] = actors[i].col.r;
+                screenData[y][x][1] = actors[i].col.g;
+                screenData[y][x][2] = actors[i].col.b;
             }
         }
     }
@@ -146,8 +145,11 @@ int main(int argc, char *argv[])
 
     Rect r1 = {0, 480, 640, 430, 50, 50, 50};
     rects.push_back(r1);
-    Actor player = {Rect {50, 430, 80, 350, 0, 255, 255}, Pos {50, 430}};
+    /*Actor player = {Rect {50, 430, 80, 350, 0, 255, 255}, Pos {50, 430}};
+    actors.push_back(player);*/
+    Sprite player(Pos {50, 430}, Col {117, 254, 165}, 30, 80);
     actors.push_back(player);
+
 
     //testing guff concludes
 
