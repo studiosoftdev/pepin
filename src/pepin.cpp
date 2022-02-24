@@ -12,22 +12,6 @@
 #define SCREENH 480
 #define WINTITLE "2D Application"
 
-typedef unsigned char u8;
-/*typedef struct Rectangle {
-    int x1, y1, x2, y2; //two points make a rectangle
-    unsigned char r, g, b; //will specify rgb vals
-} Rect;
-typedef struct Colour {
-    unsigned char r, g, b; //will specify rgb vals
-} Col;
-typedef struct Position {
-    int x, y;
-} Pos;
-typedef struct ActorT {
-    Rect sprite;
-    Pos pos; //points to bottom left ?
-} Actor;*/
-
 using namespace std;
 
 
@@ -35,8 +19,13 @@ void setupTexture();
 void updateTexture();
 
 u8 screenData[SCREENH][SCREENW][3];
+char textures [255][255][3][255]; //X, Y, RGB, texID
+int texID = 0;
 vector<Rect> rects;
 vector<Sprite> actors;
+int movement = 0;
+Sprite player;
+Sprite pep;
 
 
 static void resize(int width, int height)
@@ -86,6 +75,13 @@ void display(){
     updateTexture();
     glutSwapBuffers();
 
+    //clear screen
+    for(int x = 0; x < SCREENW; x++){
+        for(int y = 0; y < SCREENH; y++){
+            screenData[y][x][0] = screenData[y][x][1] = screenData[y][x][2] = 0;
+        }
+    }
+
     for(int i = 0; i < rects.size(); ++i){
         int len = abs(rects[i].x2 - rects[i].x1);
         int hgt = abs(rects[i].y2 - rects[i].y1);
@@ -102,22 +98,40 @@ void display(){
         int hgt = actors[i].h;
         int iy = actors[i].pos.y;
         int ix = actors[i].pos.x;
-
-        for(int y = iy - hgt; y < iy; y++){
-            for(int x = ix; x < ix + len; x++){
-                screenData[y][x][0] = actors[i].col.r;
-                screenData[y][x][1] = actors[i].col.g;
-                screenData[y][x][2] = actors[i].col.b;
+        if(!actors[i].hasImg){
+            for(int y = iy - hgt; y < iy; y++){
+                for(int x = ix; x < ix + len; x++){
+                    screenData[y][x][0] = actors[i].col.r;
+                    screenData[y][x][1] = actors[i].col.g;
+                    screenData[y][x][2] = actors[i].col.b;
+                }
+            }
+        }
+        else{
+            for(int y = iy; y < iy + hgt; y++){
+                for(int x = ix; x < ix + len; x++){
+                    screenData[y][x][2] = textures[x-ix][y-(iy)][0][actors[i].img.texID];
+                    screenData[y][x][1] = textures[x-ix][y-(iy)][1][actors[i].img.texID];
+                    screenData[y][x][0] = textures[x-ix][y-(iy)][2][actors[i].img.texID];
+                }
             }
         }
     }
 }
 
 void keyboardDown(unsigned char key, int x, int y){
+    if(key == 'd'){
+        player.pos.x += 2;
+        actors.at(1) = player;
+    }
     return;
 }
 
 void keyboardUp(unsigned char key, int x, int y){
+    if(key == 'a'){
+        player.pos.x -= 2;
+        actors.at(1) = player;
+    }
     return;
 }
 
@@ -143,13 +157,30 @@ int main(int argc, char *argv[])
 
     //testing guff
 
+    //add image for testing
+    char path[] = "pep.tga";
+    Image img;
+    img.iniImage(path, texID);
+    img.getImageDims();
+    img.loadImg(textures);
+    //char image[img.w][img.h][3];
+    texID++;
+
+    //add sprite with image
+    pep.iniSprite(Pos{250, 150}, img, img.w, img.h);
+    actors.push_back(pep);
+
+    //add floor
     Rect r1 = {0, 480, 640, 430, 50, 50, 50};
     rects.push_back(r1);
-    /*Actor player = {Rect {50, 430, 80, 350, 0, 255, 255}, Pos {50, 430}};
-    actors.push_back(player);*/
-    Sprite player(Pos {50, 430}, Col {117, 254, 165}, 30, 80);
+
+    //add player
+    player.iniSprite(Pos {50, 430}, Col {117, 254, 165}, 30, 80);
     actors.push_back(player);
 
+    
+    cout << "past addns" << endl;
+    
 
     //testing guff concludes
 
