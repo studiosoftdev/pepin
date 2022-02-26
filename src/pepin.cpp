@@ -19,13 +19,14 @@ void setupTexture();
 void updateTexture();
 
 u8 screenData[SCREENH][SCREENW][3];
-char textures [255][255][3][255]; //X, Y, RGB, texID
+unsigned char textures [255][255][4][255]; //X, Y, RGB, texID
 int texID = 0;
 vector<Rect> rects;
 vector<Sprite> actors;
 int movement = 0;
 Sprite player;
 Sprite pep;
+Sprite frog;
 
 
 static void resize(int width, int height)
@@ -110,9 +111,14 @@ void display(){
         else{
             for(int y = iy; y < iy + hgt; y++){
                 for(int x = ix; x < ix + len; x++){
-                    screenData[y][x][2] = textures[x-ix][y-(iy)][0][actors[i].img.texID];
-                    screenData[y][x][1] = textures[x-ix][y-(iy)][1][actors[i].img.texID];
-                    screenData[y][x][0] = textures[x-ix][y-(iy)][2][actors[i].img.texID];
+                    float alphaAmount = (textures[x-ix][y-(iy)][3][actors[i].img.texID])/255.0;
+                    screenData[y][x][0] = (char)floorf((textures[x-ix][y-(iy)][0][actors[i].img.texID] * alphaAmount) + (screenData[y][x][0] * (1-alphaAmount)));
+                    screenData[y][x][1] = (char)floorf((textures[x-ix][y-(iy)][1][actors[i].img.texID] * alphaAmount) + (screenData[y][x][1] * (1-alphaAmount)));
+                    screenData[y][x][2] = (char)floorf((textures[x-ix][y-(iy)][2][actors[i].img.texID] * alphaAmount) + (screenData[y][x][2] * (1-alphaAmount)));
+
+                    //screenData[y][x][0] = textures[x-ix][y-(iy)][0][actors[i].img.texID];
+                    //screenData[y][x][1] = textures[x-ix][y-(iy)][1][actors[i].img.texID];
+                    //screenData[y][x][2] = textures[x-ix][y-(iy)][2][actors[i].img.texID];
                 }
             }
         }
@@ -122,7 +128,7 @@ void display(){
 void keyboardDown(unsigned char key, int x, int y){
     if(key == 'd'){
         player.pos.x += 2;
-        actors.at(1) = player;
+        actors.at(2) = player;
     }
     return;
 }
@@ -130,7 +136,7 @@ void keyboardDown(unsigned char key, int x, int y){
 void keyboardUp(unsigned char key, int x, int y){
     if(key == 'a'){
         player.pos.x -= 2;
-        actors.at(1) = player;
+        actors.at(2) = player;
     }
     return;
 }
@@ -139,6 +145,10 @@ void keyboardUp(unsigned char key, int x, int y){
 
 int main(int argc, char *argv[])
 {
+    unsigned char c = 0xFF;
+    int i = floorf(c/255.0);
+    cout << i << endl;
+    //return 0;
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(SCREENW * 1,SCREENH * 1);
@@ -163,12 +173,23 @@ int main(int argc, char *argv[])
     img.iniImage(path, texID);
     img.getImageDims();
     img.loadImg(textures);
-    //char image[img.w][img.h][3];
     texID++;
 
     //add sprite with image
-    pep.iniSprite(Pos{250, 150}, img, img.w, img.h);
+    pep.iniSprite(Pos{250, 250}, img, img.w, img.h);
     actors.push_back(pep);
+
+    //add frog image for alpha testing
+    char path2[] = "frog.tga";
+    Image img2;
+    img2.iniImage(path2, texID);
+    img2.getImageDims();
+    img2.loadImg(textures);
+    texID++;
+
+    //add frog sprite with frog image
+    frog.iniSprite(Pos{250, 220}, img2, img2.w, img2.h);
+    actors.push_back(frog);
 
     //add floor
     Rect r1 = {0, 480, 640, 430, 50, 50, 50};

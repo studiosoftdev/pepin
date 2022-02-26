@@ -26,10 +26,11 @@ public:
 	int w, h;
 	char path[255];
 	int texID; //ID of image within tex array
+	bool usesA; //true if image uses alpha channel
 	Image();
 	void iniImage(char inipath[], int initexID);
 	void getImageDims();
-	void loadImg(char textures[255][255][3][255]);
+	void loadImg(unsigned char textures[255][255][4][255]);
 };
 
 class Sprite {
